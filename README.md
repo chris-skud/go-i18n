@@ -67,6 +67,7 @@ goi18n -help
 1. Use `goi18n extract` to create a message file that contains the messages defined in your Go source files (e.g. `goi18n extract -format=json path/to/your/source`)
 
 2. Use `goi18n translate` to create message files for translation (e.g. `goi18n translation -newLangs=en-US,en-GB -format=json active.*.json translate.*.json`). See `goi18n translation -help`
+   1. There is also a "provider" flag that enables custom marshalling of translate.*.json files to get them in a format suitable for a given translation provider. Currently only "smartling" is supported (and its very opinionated).
 
 3. Use `goi18n merge` to merge translated message files with your existing "active" message files (e.g. `goi18n merge -format=json active.*.json translate.*.json`).
 

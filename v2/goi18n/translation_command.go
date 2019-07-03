@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/chris-skud/go-i18n/v2/goi18n/providers"
 	"github.com/chris-skud/go-i18n/v2/i18n"
 	"github.com/chris-skud/go-i18n/v2/internal"
 	"github.com/chris-skud/go-i18n/v2/internal/plural"
@@ -20,7 +21,7 @@ import (
 func usagetranslation() {
 	fmt.Fprintf(os.Stderr, `usage: goi18n translation [options] [message files]
 
-translation generates a updates to all translation files based on the deltas detected between 
+translation generates a single en file to all translation files based on the deltas detected between 
 the source file and existing active files.
 
 Flags:
@@ -38,6 +39,11 @@ Flags:
 		Supported formats: json, toml, yaml
 		Default: toml
 	
+	-provider string
+		Apply custom file formatting based on requirements of translation provider
+		Supported: smartling
+		Default: none
+	
 	-newLangs tags
 		Comma separated list of language "tags" (e.g. en, en-US, zh-Hant-CN)
  		Default: none
@@ -49,6 +55,7 @@ type translationCommand struct {
 	sourceLanguage languageTag
 	outdir         string
 	format         string
+	provider       providers.Provider
 	newLangs       []string
 }
 
@@ -64,10 +71,17 @@ func (tc *translationCommand) parse(args []string) error {
 	flags.StringVar(&tc.outdir, "outdir", ".", "")
 	flags.StringVar(&tc.format, "format", "toml", "")
 
+	var providerStr string
+	flags.StringVar(&providerStr, "provider", "", "")
+
 	var commaSepNewLangs string
 	flags.StringVar(&commaSepNewLangs, "newLangs", "", "A comma separated list of any language codes to add new")
 	if err := flags.Parse(args); err != nil {
 		return err
+	}
+
+	if providerStr != "" {
+		tc.provider = providers.GetProvider(providerStr)
 	}
 
 	if len(commaSepNewLangs) != 0 {
@@ -133,7 +147,7 @@ func (tc *translationCommand) execute() error {
 		}
 		inFiles[path] = content
 	}
-	ops, err := translation(inFiles, tc.sourceLanguage.Tag(), tc.outdir, tc.format)
+	ops, err := translation(inFiles, tc.sourceLanguage.Tag(), tc.outdir, tc.format, tc.provider)
 	if err != nil {
 		return err
 	}
@@ -149,7 +163,7 @@ func (tc *translationCommand) execute() error {
 	return nil
 }
 
-func translation(messageFiles map[string][]byte, sourceLanguageTag language.Tag, outdir, outputFormat string) (*fileSystemOp, error) {
+func translation(messageFiles map[string][]byte, sourceLanguageTag language.Tag, outdir, outputFormat string, provider providers.Provider) (*fileSystemOp, error) {
 	untranslationd := make(map[language.Tag][]map[string]*i18n.MessageTemplate)
 	sourceMessageTemplates := make(map[string]*i18n.MessageTemplate)
 	unmarshalFuncs := map[string]i18n.UnmarshalFunc{
@@ -267,10 +281,11 @@ func translation(messageFiles map[string][]byte, sourceLanguageTag language.Tag,
 
 	writeFiles := make(map[string][]byte, len(translation)+len(active))
 	for langTag, messageTemplates := range translation {
-		path, content, err := writeFile(outdir, "translate", langTag, outputFormat, messageTemplates, false)
+		path, content, err := writeFile(outdir, "translate", langTag, outputFormat, messageTemplates, false, provider)
 		if err != nil {
 			return nil, err
 		}
+
 		writeFiles[path] = content
 	}
 	deleteFiles := []string{}

@@ -227,7 +227,7 @@ func merge(messageFiles map[string][]byte, sourceLanguageTag language.Tag, outdi
 
 	writeFiles := make(map[string][]byte, len(translate)+len(active))
 	for langTag, messageTemplates := range translate {
-		path, content, err := writeFile(outdir, "translate", langTag, outputFormat, messageTemplates, false)
+		path, content, err := writeFile(outdir, "translate", langTag, outputFormat, messageTemplates, false, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -235,7 +235,7 @@ func merge(messageFiles map[string][]byte, sourceLanguageTag language.Tag, outdi
 	}
 	deleteFiles := []string{}
 	for langTag, messageTemplates := range active {
-		path, content, err := writeFile(outdir, "active", langTag, outputFormat, messageTemplates, langTag == sourceLanguageTag)
+		path, content, err := writeFile(outdir, "active", langTag, outputFormat, messageTemplates, langTag == sourceLanguageTag, nil)
 		if err != nil {
 			return nil, err
 		}

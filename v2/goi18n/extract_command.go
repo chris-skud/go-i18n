@@ -108,7 +108,7 @@ func (ec *extractCommand) execute() error {
 			messageTemplates[m.ID] = mt
 		}
 	}
-	path, content, err := writeFile(ec.outdir, "active", ec.sourceLanguage.Tag(), ec.format, messageTemplates, true)
+	path, content, err := writeFile(ec.outdir, "active", ec.sourceLanguage.Tag(), ec.format, messageTemplates, true, nil)
 	if err != nil {
 		return err
 	}

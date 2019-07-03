@@ -7,20 +7,26 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
+	"github.com/chris-skud/go-i18n/v2/goi18n/providers"
 	"github.com/chris-skud/go-i18n/v2/i18n"
 	"github.com/chris-skud/go-i18n/v2/internal/plural"
 	"golang.org/x/text/language"
 	yaml "gopkg.in/yaml.v2"
 )
 
-func writeFile(outdir, label string, langTag language.Tag, format string, messageTemplates map[string]*i18n.MessageTemplate, sourceLanguage bool) (path string, content []byte, err error) {
+func writeFile(outdir, label string, langTag language.Tag, format string, messageTemplates map[string]*i18n.MessageTemplate, sourceLanguage bool, provider providers.Provider) (path string, content []byte, err error) {
 	v := marshalValue(messageTemplates, sourceLanguage)
-	content, err = marshal(v, format)
+	if provider != nil {
+		content, err = provider.Marshal(v, format)
+	} else {
+		content, err = marshal(v, format)
+	}
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to marshal %s strings to %s: %s", langTag, format, err)
 	}
 	path = filepath.Join(outdir, fmt.Sprintf("%s.%s.%s", label, langTag, format))
-	return
+
+	return path, content, nil
 }
 
 func marshalValue(messageTemplates map[string]*i18n.MessageTemplate, sourceLanguage bool) interface{} {
