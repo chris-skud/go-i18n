@@ -79,7 +79,7 @@ func smartlingMeta() ([]byte, error) {
 	}
 
 	var smartbuf bytes.Buffer
-	_, err = smartbuf.WriteString(`{"smartling": {"translation_paths": `)
+	_, err = smartbuf.WriteString(`{"smartling": {"translate_paths": `)
 	if err != nil {
 		return nil, err
 	}
