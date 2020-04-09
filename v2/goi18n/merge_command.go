@@ -20,19 +20,13 @@ import (
 func usageMerge() {
 	fmt.Fprintf(os.Stderr, `usage: goi18n merge [options] [message files]
 
-Merge reads all messages in the message files and produces two files per language.
+Merge reads all messages in the message files and produces active files
 
 	xx-yy.active.format
 		This file contains messages that should be loaded at runtime.
 
-	xx-yy.translate.format
-		This file contains messages that are empty and should be translated.
-
 Message file names must have a suffix of a supported format (e.g. ".json") and
 contain a valid language tag as defined by RFC 5646 (e.g. "en-us", "fr", "zh-hant", etc.).
-
-To add support for a new language, create an empty translation file with the
-appropriate name and pass it in to goi18n merge.
 
 Flags:
 
@@ -226,13 +220,6 @@ func merge(messageFiles map[string][]byte, sourceLanguageTag language.Tag, outdi
 	}
 
 	writeFiles := make(map[string][]byte, len(translate)+len(active))
-	for langTag, messageTemplates := range translate {
-		path, content, err := writeFile(outdir, "translate", langTag, outputFormat, messageTemplates, false, nil)
-		if err != nil {
-			return nil, err
-		}
-		writeFiles[path] = content
-	}
 	deleteFiles := []string{}
 	for langTag, messageTemplates := range active {
 		path, content, err := writeFile(outdir, "active", langTag, outputFormat, messageTemplates, langTag == sourceLanguageTag, nil)

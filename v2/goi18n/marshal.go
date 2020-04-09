@@ -26,6 +26,9 @@ func writeFile(outdir, label string, langTag language.Tag, format string, messag
 	}
 	path = filepath.Join(outdir, fmt.Sprintf("%s.%s.%s", label, langTag, format))
 
+	// hack to strip extra backslash json encoder adds to '\n' in json string
+	content = bytes.Replace(content, []byte(`\\n`), []byte(`\n`), -1)
+
 	return path, content, nil
 }
 
